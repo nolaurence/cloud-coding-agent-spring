@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:cca-test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+      platform: h2
+      schema-locations: classpath:schema-h2.sql
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 0
+
+app:
+  data-dir: target/test-data
+  workspace-root: target/test-workspace
+  bootstrap-default-workspace: false
+  copilot:
+    enabled: false
+    github-token: ""

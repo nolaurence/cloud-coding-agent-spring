@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Cloud Coding Agent</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">CCA</div>
+        <div class="brand-text">
+          <strong>Cloud Coding Agent</strong>
+          <span>Spring Boot · Copilot SDK</span>
+        </div>
+      </div>
+
+      <div class="workspace-switch">
+        <button id="workspaceButton" class="workspace-button" type="button">
+          <span class="workspace-icon">▣</span>
+          <span id="workspaceName" class="workspace-name">选择工作区</span>
+          <span class="chevron">⌄</span>
+        </button>
+        <div id="workspaceMenu" class="menu hidden"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-title">
+          <span>会话</span>
+          <button id="newThreadBtn" class="mini-button" type="button" title="新会话">＋</button>
+        </div>
+        <div id="threadList" class="thread-list"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="newWorkspaceBtn" class="ghost-button" type="button">＋ 新建工作区</button>
+        <button id="apiKeyBtn" class="ghost-button" type="button">🔑 API Key</button>
+      </div>
+    </aside>
+
+    <main class="chat-pane">
+      <header class="chat-header">
+        <div class="chat-title-wrap">
+          <h1 id="threadTitle">新会话</h1>
+          <span id="threadStatus" class="status-badge idle">空闲</span>
+        </div>
+        <div class="chat-actions">
+          <label class="select-wrap">
+            <span>模型</span>
+            <select id="modelSelect"></select>
+          </label>
+          <label class="select-wrap">
+            <span>权限</span>
+            <select id="permissionSelect">
+              <option value="request">每次确认</option>
+              <option value="auto">自动批准</option>
+              <option value="full">完全访问</option>
+            </select>
+          </label>
+          <button id="pinBtn" class="icon-button" type="button" title="置顶">📌</button>
+          <button id="archiveBtn" class="icon-button" type="button" title="归档">🗂</button>
+        </div>
+      </header>
+
+      <div id="messageList" class="message-list">
+        <div class="empty-state">
+          <div class="empty-glyph">⌘</div>
+          <h2>开始一个编码任务</h2>
+          <p>描述你想实现的功能、要修复的 Bug，或粘贴一段代码。Copilot 会在当前工作区内读取、修改文件并运行命令。</p>
+        </div>
+      </div>
+
+      <div id="permissionBar" class="permission-bar hidden"></div>
+
+      <div class="composer">
+        <textarea id="promptInput" rows="1" placeholder="描述任务，Enter 发送，Shift + Enter 换行"></textarea>
+        <div class="composer-actions">
+          <span id="composerHint" class="hint">Copilot · 等待连接</span>
+          <button id="stopBtn" class="ghost-button hidden" type="button">停止</button>
+          <button id="sendBtn" class="send-button" type="button">发送 ↑</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="inspector">
+      <div class="inspector-header">
+        <span>工作区文件</span>
+        <button id="refreshFilesBtn" class="mini-button" type="button" title="刷新">⟳</button>
+      </div>
+      <div id="fileTree" class="file-tree"></div>
+      <div id="fileViewer" class="file-viewer hidden">
+        <div class="file-viewer-header">
+          <span id="fileViewerPath"></span>
+          <button id="closeFileBtn" class="mini-button" type="button">×</button>
+        </div>
+        <pre id="fileViewerContent"></pre>
+      </div>
+    </aside>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <dialog id="workspaceDialog" class="dialog">
+    <form method="dialog" class="dialog-form" id="workspaceForm">
+      <h2>新建工作区</h2>
+      <label>名称<input name="name" required maxlength="128" placeholder="例如：我的项目" /></label>
+      <label>路径（留空则自动创建）<input name="path" maxlength="1024" placeholder="例如：projects/demo" /></label>
+      <label>描述<input name="description" maxlength="512" placeholder="可选" /></label>
+      <div class="dialog-actions">
+        <button value="default" class="send-button" type="submit">创建</button>
+        <button value="cancel" class="ghost-button" type="submit">取消</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="threadDialog" class="dialog">
+    <form method="dialog" class="dialog-form" id="threadForm">
+      <h2>新建会话</h2>
+      <label>标题<input name="title" maxlength="255" placeholder="例如：实现登录接口" /></label>
+      <label>模型<input name="model" maxlength="128" placeholder="留空使用默认模型" /></label>
+      <label>权限
+        <select name="permissionMode">
+          <option value="request">每次确认</option>
+          <option value="auto">自动批准</option>
+          <option value="full">完全访问</option>
+        </select>
+      </label>
+      <div class="dialog-actions">
+        <button value="default" class="send-button" type="submit">创建</button>
+        <button value="cancel" class="ghost-button" type="submit">取消</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="apiKeyDialog" class="dialog">
+    <form method="dialog" class="dialog-form" id="apiKeyForm">
+      <h2>连接 API Key</h2>
+      <p class="dialog-hint">服务端启用了访问控制。请输入配置的 API Key，只会保存在当前浏览器。</p>
+      <label>API Key<input name="apiKey" required autocomplete="off" placeholder="CCA_API_KEY" /></label>
+      <div class="dialog-actions">
+        <button value="default" class="send-button" type="submit">保存并连接</button>
+        <button value="cancel" class="ghost-button" type="submit">取消</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/vendor/purify.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

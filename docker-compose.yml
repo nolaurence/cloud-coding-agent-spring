@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://192.168.100.231:3306/cgnew?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-cgnew}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-123456}
+      SERVER_PORT: 8787
+      CCA_DATA_DIR: /app/data
+      CCA_WORKSPACE_ROOT: /app/workspace
+      CCA_SECURITY_ENABLED: ${CCA_SECURITY_ENABLED:-false}
+      CCA_API_KEY: ${CCA_API_KEY:-}
+      CCA_COPILOT_ENABLED: ${CCA_COPILOT_ENABLED:-true}
+      CCA_COPILOT_MODEL: ${CCA_COPILOT_MODEL:-gpt-5}
+      COPILOT_GITHUB_TOKEN: ${COPILOT_GITHUB_TOKEN:-}
+    ports:
+      - "${APP_PORT:-8787}:8787"
+    volumes:
+      - app-data:/app/data
+      - app-workspace:/app/workspace
+    restart: unless-stopped
+
+volumes:
+  app-data:
+  app-workspace:

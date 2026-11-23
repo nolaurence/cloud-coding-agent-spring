@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: cloud-coding-agent-spring
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://192.168.100.231:3306/cgnew?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:cgnew}
+    password: ${SPRING_DATASOURCE_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 3600
+
+server:
+  port: ${SERVER_PORT:8787}
+  forward-headers-strategy: framework
+  tomcat:
+    max-http-form-post-size: 2MB
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+  mapper-locations: classpath*:mapper/*.xml
+
+app:
+  data-dir: ${CCA_DATA_DIR:./data}
+  workspace-root: ${CCA_WORKSPACE_ROOT:./workspace}
+  bootstrap-default-workspace: ${CCA_BOOTSTRAP_DEFAULT_WORKSPACE:true}
+  default-model: ${CCA_DEFAULT_MODEL:gpt-5}
+  security:
+    enabled: ${CCA_SECURITY_ENABLED:false}
+    api-key: ${CCA_API_KEY:}
+  copilot:
+    enabled: ${CCA_COPILOT_ENABLED:true}
+    model: ${CCA_COPILOT_MODEL:gpt-5}
+    github-token: ${COPILOT_GITHUB_TOKEN:}
+    startup-timeout-seconds: 90
+    turn-timeout-minutes: 45
+    session-idle-minutes: 30
+    tools:
+      - "builtin:*"
+logging:
+  level:
+    root: INFO
+    com.cca.spring: INFO
+    org.apache.ibatis: WARN
